@@ -167,15 +167,15 @@ if (ZSTD)
 endif()
 
 # Create the static library
-add_library(basisu_encoder STATIC ${ENCODER_LIB_SRC_LIST})
+add_library(encoder STATIC ${ENCODER_LIB_SRC_LIST})
 
 # Create the basisu executable and link against the static library
 add_executable(basisu basisu_tool.cpp)
-target_link_libraries(basisu PRIVATE basisu_encoder)
+target_link_libraries(basisu PRIVATE encoder)
 
 # Create the new example executable and link against the static library
 add_executable(examples example/example.cpp)
-target_link_libraries(examples PRIVATE basisu_encoder)
+target_link_libraries(examples PRIVATE encoder)
 
 if (ZSTD)
     target_compile_definitions(basisu PRIVATE BASISD_SUPPORT_KTX2_ZSTD=1)
@@ -193,7 +193,7 @@ if (NOT MSVC)
         
         target_include_directories(basisu PRIVATE ${OpenCL_INCLUDE_DIRS})
         target_include_directories(examples PRIVATE ${OpenCL_INCLUDE_DIRS})
-		target_include_directories(basisu_encoder PRIVATE ${OpenCL_INCLUDE_DIRS})
+		target_include_directories(encoder PRIVATE ${OpenCL_INCLUDE_DIRS})
         set(BASISU_EXTRA_LIBS ${OpenCL_LIBRARIES})
     endif()
 else()
@@ -204,7 +204,7 @@ else()
         
         target_include_directories(basisu PRIVATE "OpenCL")
         target_include_directories(examples PRIVATE "OpenCL")
-		target_include_directories(basisu_encoder PRIVATE "OpenCL")
+		target_include_directories(encoder PRIVATE "OpenCL")
 
         if (BUILD_X64)
             target_link_libraries(basisu PRIVATE "${CMAKE_SOURCE_DIR}/OpenCL/lib/OpenCL64.lib")
@@ -250,11 +250,12 @@ if (MSVC)
         RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    )	
+    )
 endif()
 
 add_library(transcoder STATIC transcoder/basisu_transcoder.cpp zstd/zstddeclib.c)
 set_target_properties(transcoder PROPERTIES OUTPUT_NAME "BasisTranscoder")
+set_target_properties(encoder PROPERTIES OUTPUT_NAME "BasisEncoder")
 
 install(TARGETS basisu examples
         RUNTIME DESTINATION bin
@@ -268,7 +269,18 @@ install(TARGETS transcoder
         INCLUDES DESTINATION include/transcoder
 )
 
+install(TARGETS encoder
+        EXPORT BasisTargets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include/encoder
+)
+
 install(DIRECTORY transcoder/ DESTINATION include/transcoder)
+install(DIRECTORY encoder/ DESTINATION include/encoder
+        FILES_MATCHING PATTERN "*.h")
+
 
 install(EXPORT BasisTargets
         FILE BasisConfig.cmake
