@@ -252,3 +252,26 @@ if (MSVC)
         RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )	
 endif()
+
+add_library(transcoder STATIC transcoder/basisu_transcoder.cpp zstd/zstddeclib.c)
+set_target_properties(transcoder PROPERTIES OUTPUT_NAME "BasisTranscoder")
+
+install(TARGETS basisu examples
+        RUNTIME DESTINATION bin
+)
+
+install(TARGETS transcoder
+        EXPORT BasisTargets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include/transcoder
+)
+
+install(DIRECTORY transcoder/ DESTINATION include/transcoder)
+
+install(EXPORT BasisTargets
+        FILE BasisConfig.cmake
+        NAMESPACE basis::
+        DESTINATION lib/cmake/Basis
+)

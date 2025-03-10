@@ -9,3 +9,8 @@ x64/
 
 # Mac finder
 .DS_Store
+
+# CLion
+.idea
+cmake-build-*
+install/
